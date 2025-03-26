@@ -1,36 +1,30 @@
 # Security Context Constraints for Filebeat
-# Allows Filebeat to access host directories and run with necessary permissions
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:
   name: filebeat-scc
 allowHostDirVolumePlugin: true
-allowHostIPC: false
-allowHostNetwork: false
-allowHostPID: false
-allowHostPorts: false
-allowPrivilegeEscalation: true
-allowPrivilegedContainer: false
+allowHostNetwork: true
+allowHostPorts: true
+allowPrivilegedContainer: true
 allowedCapabilities:
-- 'SYS_RESOURCE'
-defaultAddCapabilities: null
+- '*'
 fsGroup:
   type: RunAsAny
-priority: null
-readOnlyRootFilesystem: false
-requiredDropCapabilities:
-- ALL
+priority: 100
 runAsUser:
   type: RunAsAny
 seLinuxContext:
   type: RunAsAny
 supplementalGroups:
   type: RunAsAny
-volumes:
-- hostPath
-- configMap
-- secret
-- emptyDir
 users:
-- system:serviceaccount:eck-demo:filebeat
-
+- system:serviceaccount:eck-test:filebeat
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- hostPath
+- persistentVolumeClaim
+- projected
+- secret

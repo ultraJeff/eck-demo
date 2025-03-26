@@ -1,25 +1,23 @@
-# Kibana dashboard configuration for ECK
+# Kibana configuration with Elasticsearch integration
 apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
 metadata:
   name: kibana-sample
-  namespace: openshift-operators
+  namespace: monitoring  # Default namespace, can be overridden by deploy.sh
 spec:
   version: 8.17.0
   count: 1
   elasticsearchRef:
     name: elasticsearch-sample
+    namespace: monitoring  # Must match Elasticsearch namespace
   podTemplate:
-    metadata:
-      labels:
-        foo: bar
     spec:
       containers:
       - name: kibana
         resources:
-          limits:
-            cpu: "2"
-            memory: 2Gi
           requests:
-            cpu: 500m
             memory: 1Gi
+            cpu: 1
+          limits:
+            memory: 1Gi
+            cpu: 1

@@ -1,7 +1,24 @@
-# Kibana
+# Kibana Configuration
 
-Contains Kibana and related routing configurations.
+This directory contains the Kibana configuration for the ECK stack.
 
-## Files
-- `kibana.yaml`: Basic Kibana instance configuration
-- `route.yaml`: OpenShift route configuration for Kibana access
+## Configuration Details
+
+The `kibana.yaml` file defines:
+- Single Kibana instance
+- Automatic Elasticsearch connection
+- Default security settings
+
+## Security
+
+- Uses Elasticsearch credentials automatically
+- Access via OpenShift route
+- Authentication required (uses Elasticsearch credentials)
+
+## Resource Requirements
+
+Default resources:
+- Memory: 1Gi
+- CPU: 1
+
+Adjust these values in `kibana.yaml` based on your needs.

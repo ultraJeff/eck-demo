@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: log-generator
-  namespace: eck-demo
+  namespace: monitoring  # Default namespace, can be overridden by deploy.sh
 spec:
   replicas: 1
   selector:

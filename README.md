@@ -1,34 +1,78 @@
-# Elastic Cloud on Kubernetes (ECK) Demo
+# ECK Stack Deployment
 
-This repository contains templates for deploying and configuring Elastic Cloud on Kubernetes (ECK) components.
+This repository contains configurations and deployment scripts for setting up the Elastic Cloud on Kubernetes (ECK) stack on OpenShift.
+
+## Components
+
+- Elasticsearch: Distributed search and analytics engine
+- Kibana: Data visualization dashboard
+- Filebeat: Log collection and forwarding
+
+## Prerequisites
+
+1. OpenShift cluster with administrator access
+2. OpenShift CLI (`oc`) installed and configured
+3. ECK Operator installed in the cluster
 
 ## Directory Structure
 
-- `templates/elasticsearch/`: Elasticsearch cluster configuration
-- `templates/kibana/`: Kibana and routing configuration
-- `templates/monitoring/`: Log collection and monitoring configuration
-- `templates/apps/`: Demo applications
+```
+.
+├── deploy.sh                    # Main deployment script
+├── templates
+│   ├── elasticsearch/           # Elasticsearch configurations
+│   ├── kibana/                  # Kibana configurations
+│   └── monitoring/              # Filebeat configurations
+```
 
-## Getting Started
+## Deployment
 
-1. Deploy Elasticsearch:
+1. Deploy to the default namespace (monitoring):
    ```bash
-   oc apply -f templates/elasticsearch/elasticsearch.yaml
+   ./deploy.sh
    ```
 
-2. Deploy Kibana:
+2. Deploy to a custom namespace:
    ```bash
-   oc apply -f templates/kibana/kibana.yaml
-   oc apply -f templates/kibana/route.yaml
+   ./deploy.sh my-namespace
    ```
 
-3. Set up monitoring:
+## Configuration Details
+
+See the README files in each component directory for specific configuration details:
+
+- [Elasticsearch Configuration](templates/elasticsearch/README.md)
+- [Kibana Configuration](templates/kibana/README.md)
+- [Filebeat Configuration](templates/monitoring/README.md)
+
+## Security Considerations
+
+- Filebeat requires privileged access to read container logs
+- Default passwords are generated automatically by the ECK operator
+- To get the Elasticsearch password:
+  ```bash
+  oc get secret elasticsearch-sample-es-elastic-user -n <namespace> -o jsonpath='{.data.elastic}' | base64 -d
+  ```
+
+## Troubleshooting
+
+1. Check pod status:
    ```bash
-   oc apply -f templates/monitoring/filebeat-scc.yaml
-   oc apply -f templates/monitoring/filebeat.yaml
+   oc get pods -n <namespace>
    ```
 
-4. Deploy demo app:
+2. View component logs:
    ```bash
-   oc apply -f templates/apps/log-generator.yaml
+   # Elasticsearch
+   oc logs -f -l elasticsearch.k8s.elastic.co/cluster-name=elasticsearch-sample -n <namespace>
+   
+   # Kibana
+   oc logs -f -l kibana.k8s.elastic.co/name=kibana-sample -n <namespace>
+   
+   # Filebeat
+   oc logs -f -l beat.k8s.elastic.co/name=filebeat -n <namespace>
    ```
+
+3. Common issues:
+   - If Filebeat fails to start, check if the SCC is properly configured
+   - If components can't connect, verify the namespace matches in all configurations
