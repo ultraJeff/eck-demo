@@ -30,8 +30,8 @@ spec:
               ignore_missing: true
           - rename:
               fields:
-               - from: "container.name"
-                 to: "kubernetes.container.name"
+                - from: "container.name"
+                  to: "kubernetes.container.name"
               ignore_missing: true
           - decode_json_fields:
               fields: ["message"]

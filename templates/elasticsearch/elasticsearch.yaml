@@ -1,0 +1,29 @@
+# Elasticsearch cluster configuration for ECK (Elastic Cloud on Kubernetes)
+# This defines a basic Elasticsearch cluster with 3 nodes
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elasticsearch-sample
+  namespace: openshift-operators
+spec:
+  version: 8.17.0
+  nodeSets:
+  - name: default
+    count: 3
+    config:
+      node.roles: ["master", "data"]
+      node.store.allow_mmap: false
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 4Gi
+              cpu: 1
+            limits:
+              memory: 4Gi
+              cpu: 2
+        volumes:
+        - name: elasticsearch-data
+          emptyDir: {}

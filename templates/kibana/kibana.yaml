@@ -6,32 +6,18 @@ metadata:
   name: kibana-sample
   namespace: openshift-operators
 spec:
+  version: 8.17.0
   count: 1
   elasticsearchRef:
     name: elasticsearch-sample
-  enterpriseSearchRef: {}
-  http:
-    service:
-      metadata: {}
-      spec: {}
-    tls:
-      certificate: {}
-  monitoring:
-    logs: {}
-    metrics: {}
   podTemplate:
-    metadata:
-      creationTimestamp: null
-      labels:
-        foo: bar
     spec:
       containers:
       - name: kibana
         resources:
-          limits:
-            cpu: "2"
-            memory: 2Gi
           requests:
-            cpu: 500m
             memory: 1Gi
-  version: 8.17.0
+            cpu: 0.5
+          limits:
+            memory: 2Gi
+            cpu: 2
