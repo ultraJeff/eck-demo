@@ -34,6 +34,15 @@ spec:
         - message
         overwrite_keys: true
         target: ""
+    - add_fields:
+        target: ''
+        fields:
+          container.name: '${kubernetes.container.name}'
+    - rename:
+        fields:
+          - from: "kubernetes.container.name"
+            to: "container.name"
+        ignore_missing: true
     - drop_fields:
         fields:
         - ecs

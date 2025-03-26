@@ -22,6 +22,6 @@ spec:
         - -c
         - |
           while true; do
-            echo "{\"@timestamp\":\"2025-03-26T20:12:11Z\",\"message\":\"Generated log message\",\"count\":71}";
+            echo "{\"@timestamp\":\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\",\"message\":\"Generated log message\",\"count\":$((RANDOM % 100))}";
             sleep 2;
           done
