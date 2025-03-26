@@ -20,9 +20,8 @@ spec:
         args:
         - /bin/sh
         - -c
-        - >
-          while true;
-          do
-            echo "{\"@timestamp\":\"2025-03-26T20:12:12Z\",\"message\":\"Generated log message\",\"count\":71}";
+        - |
+          while true; do
+            echo "{\"@timestamp\":\"2025-03-26T20:12:11Z\",\"message\":\"Generated log message\",\"count\":71}";
             sleep 2;
           done

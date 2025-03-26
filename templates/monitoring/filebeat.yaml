@@ -11,36 +11,35 @@ spec:
     name: elasticsearch-sample
     namespace: openshift-operators
   config:
-    filebeat.inputs:
-      - type: container
-        paths:
-          - /var/log/containers/*.log
-        processors:
-          - add_kubernetes_metadata:
-              host: ${NODE_NAME}
-              matchers:
-                - logs_path:
-                    logs_path: /var/log/containers/
-          - dissect:
-              field: "log.file.path"
-              pattern: "/var/log/containers/%{pod.name}_%{kubernetes.namespace}_%{container.name}-%{container.id}.log"
-              ignore_failure: true
-          - drop_fields:
-              fields: ["pod.name"]
-              ignore_missing: true
-          - rename:
-              fields:
-                - from: "container.name"
-                  to: "kubernetes.container.name"
-              ignore_missing: true
-          - decode_json_fields:
-              fields: ["message"]
-              target: ""
-              overwrite_keys: true
+    filebeat:
+      autodiscover:
+        providers:
+        - hints:
+            default_config:
+              paths:
+              - /var/log/containers/*${data.kubernetes.container.id}.log
+              type: container
+            enabled: true
+          node: ${NODE_NAME}
+          type: kubernetes
     processors:
-      - add_host_metadata: ~
-      - add_cloud_metadata: ~
-      - add_docker_metadata: ~
+    - add_kubernetes_metadata:
+        host: ${NODE_NAME}
+        matchers:
+        - logs_path:
+            logs_path: /var/log/containers/
+    - decode_json_fields:
+        add_error_key: true
+        fields:
+        - message
+        overwrite_keys: true
+        target: ""
+    - drop_fields:
+        fields:
+        - ecs
+        - input
+        - agent
+        ignore_missing: true
     logging.json: true
     logging.level: debug
   daemonSet:
@@ -53,7 +52,13 @@ spec:
         containers:
         - name: filebeat
           securityContext:
+            privileged: true
             runAsUser: 0
+          env:
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
           resources:
             limits:
               memory: 200Mi
@@ -62,12 +67,12 @@ spec:
               memory: 100Mi
               cpu: 100m
           volumeMounts:
-          - name: varlogcontainers
-            mountPath: /var/log/containers
-          - name: varlogpods
-            mountPath: /var/log/pods
-          - name: varlibdockercontainers
-            mountPath: /var/lib/docker/containers
+          - mountPath: /var/log/containers
+            name: varlogcontainers
+          - mountPath: /var/log/pods
+            name: varlogpods
+          - mountPath: /var/lib/docker/containers
+            name: varlibdockercontainers
         volumes:
         - name: varlogcontainers
           hostPath:
