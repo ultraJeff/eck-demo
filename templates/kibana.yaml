@@ -1,0 +1,37 @@
+# Kibana dashboard configuration for ECK
+# This configures a single Kibana instance connected to Elasticsearch
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: kibana-sample
+  namespace: openshift-operators
+spec:
+  count: 1
+  elasticsearchRef:
+    name: elasticsearch-sample
+  enterpriseSearchRef: {}
+  http:
+    service:
+      metadata: {}
+      spec: {}
+    tls:
+      certificate: {}
+  monitoring:
+    logs: {}
+    metrics: {}
+  podTemplate:
+    metadata:
+      creationTimestamp: null
+      labels:
+        foo: bar
+    spec:
+      containers:
+      - name: kibana
+        resources:
+          limits:
+            cpu: "2"
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+  version: 8.17.0

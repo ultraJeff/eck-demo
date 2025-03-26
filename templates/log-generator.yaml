@@ -1,0 +1,28 @@
+# Demo application that generates continuous log entries in JSON format
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-generator
+  namespace: eck-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-generator
+  template:
+    metadata:
+      labels:
+        app: log-generator
+    spec:
+      containers:
+      - name: log-generator
+        image: busybox
+        args:
+        - /bin/sh
+        - -c
+        - >
+          while true;
+          do
+            echo "{\"@timestamp\":\"2025-03-26T20:12:12Z\",\"message\":\"Generated log message\",\"count\":71}";
+            sleep 2;
+          done
