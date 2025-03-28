@@ -22,3 +22,5 @@ Default resources:
 - CPU: 1
 
 Adjust these values in `kibana.yaml` based on your needs.
+
+Then run `oc get secret -n monitoring elasticsearch-sample-es-elastic-user -o jsonpath='{.data.elastic}' | base64 -d` to get the elastic user password.

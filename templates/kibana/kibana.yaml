@@ -3,21 +3,18 @@ apiVersion: kibana.k8s.elastic.co/v1
 kind: Kibana
 metadata:
   name: kibana-sample
-  namespace: monitoring  # Default namespace, can be overridden by deploy.sh
+  namespace: monitoring
 spec:
-  version: 8.17.0
+  version: 8.17.4
   count: 1
   elasticsearchRef:
-    name: elasticsearch-sample
-    namespace: monitoring  # Must match Elasticsearch namespace
+    name: "elasticsearch-sample"
+    namespace: monitoring
   podTemplate:
     spec:
       containers:
       - name: kibana
         resources:
-          requests:
-            memory: 1Gi
-            cpu: 1
           limits:
             memory: 1Gi
             cpu: 1

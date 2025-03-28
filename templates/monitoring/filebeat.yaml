@@ -12,6 +12,10 @@ spec:
     namespace: monitoring  # Must match Elasticsearch namespace
   config:
     filebeat:
+      inputs:
+        - type: container
+          paths:
+            - /var/log/containers/*.log
       autodiscover:
         providers:
         - hints:
@@ -24,33 +28,24 @@ spec:
           type: kubernetes
     processors:
     - add_kubernetes_metadata:
-        host: ${NODE_NAME}
-        matchers:
-        - logs_path:
-            logs_path: /var/log/containers/
+          deployment: true
+          host: '${NODE_NAME}'
+          namespace: true
+    - drop_event:
+        when:
+          not:
+            kubernetes.namespace: eck-test
     - decode_json_fields:
-        add_error_key: true
-        fields:
-        - message
-        overwrite_keys: true
+        fields: ["message"]
         target: ""
-    - add_fields:
-        target: ''
-        fields:
-          container.name: '${kubernetes.container.name}'
-    - rename:
-        fields:
-          - from: "kubernetes.container.name"
-            to: "container.name"
-        ignore_missing: true
+        overwrite_keys: true
     - drop_fields:
-        fields:
-        - ecs
-        - input
-        - agent
+        fields: ["ecs", "input", "agent"]
         ignore_missing: true
     logging.json: true
     logging.level: debug
+  # secureSettings:
+  # - secretName: file-beat-es-secret
   daemonSet:
     podTemplate:
       spec:
@@ -94,3 +89,6 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
+setup:
+  dashboards:
+    enabled: true

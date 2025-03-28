@@ -11,6 +11,6 @@ spec:
     termination: passthrough
   to:
     kind: Service
-    name: kibana-sample
+    name: kibana-sample-kb-http
     weight: 100
   wildcardPolicy: None

@@ -1,35 +1,12 @@
-# Elasticsearch cluster configuration
+# This sample sets up an Elasticsearch cluster with an OpenShift route
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
   name: elasticsearch-sample
-  namespace: monitoring  # Default namespace, can be overridden by deploy.sh
 spec:
-  version: 8.17.0
+  version: 8.17.4
   nodeSets:
   - name: default
-    count: 3
+    count: 1
     config:
-      node.roles: ["master", "data"]
       node.store.allow_mmap: false
-    podTemplate:
-      spec:
-        containers:
-        - name: elasticsearch
-          resources:
-            requests:
-              memory: 4Gi
-              cpu: 2
-            limits:
-              memory: 4Gi
-              cpu: 2
-    volumeClaimTemplates:
-    - metadata:
-        name: elasticsearch-data
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 50Gi
-        storageClassName: gp2
