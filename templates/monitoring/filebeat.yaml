@@ -15,10 +15,10 @@ spec:
     namespace: monitoring  # Must match Kibana namespace
   config:
     filebeat:
-      inputs:
-        - type: container
-          paths:
-            - /var/log/containers/*.log
+      # inputs:
+      #   - type: container
+      #     paths:
+      #       - /var/log/containers/*.log
       autodiscover:
         providers:
         - type: kubernetes
@@ -30,17 +30,16 @@ spec:
               paths:
               - /var/log/containers/*${data.kubernetes.container.id}.log
     processors:
+    # - add_cloud_metadata: {}
+    # - add_host_metadata: {}
     - add_kubernetes_metadata:
           deployment: true
-          host: '${NODE_NAME}'
           namespace: true
     - drop_event:
         when:
           not:
             equals:
               kubernetes.container.name: log-generator
-    - add_cloud_metadata: {}
-    - add_host_metadata: {}
     # - decode_json_fields:
     #     fields: ["message"]
     #     target: ""

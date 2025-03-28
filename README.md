@@ -45,6 +45,81 @@ See the README files in each component directory for specific configuration deta
 - [Kibana Configuration](templates/kibana/README.md)
 - [Filebeat Configuration](templates/monitoring/README.md)
 
+## Index Lifecycle Management (ILM)
+
+To set up ILM policies for automatic log rotation and cleanup:
+
+1. Set up port forwarding to access Elasticsearch API:
+   ```bash
+   kubectl port-forward service/elasticsearch-sample-es-http -n monitoring 9200:9200
+   ```
+
+2. Create the ILM policy:
+   ```bash
+   curl -X PUT "https://localhost:9200/_ilm/policy/logs-ilm-policy" \
+   -H "Content-Type: application/json" \
+   -u "elastic:$ES_PASSWORD" \
+   -k \
+   -d '{
+     "policy": {
+       "phases": {
+         "hot": {
+           "min_age": "0ms",
+           "actions": {
+             "rollover": {
+               "max_age": "7d",
+               "max_size": "50gb"
+             }
+           }
+         },
+         "delete": {
+           "min_age": "30d",
+           "actions": {
+             "delete": {}
+           }
+         }
+       }
+     }
+   }'
+   ```
+
+3. Create the index template:
+   ```bash
+   curl -X PUT "https://localhost:9200/_index_template/logs-template" \
+   -H "Content-Type: application/json" \
+   -u "elastic:$ES_PASSWORD" \
+   -k \
+   -d '{
+     "index_patterns": ["logs-*"],
+     "template": {
+       "settings": {
+         "index.lifecycle.name": "logs-ilm-policy",
+         "index.lifecycle.rollover_alias": "logs"
+       }
+     }
+   }'
+   ```
+
+4. Create the initial index with rollover alias:
+   ```bash
+   curl -X PUT "https://localhost:9200/logs-000001" \
+   -H "Content-Type: application/json" \
+   -u "elastic:$ES_PASSWORD" \
+   -k \
+   -d '{
+     "aliases": {
+       "logs": {
+         "is_write_index": true
+       }
+     }
+   }'
+   ```
+
+This configuration will:
+- Create new indices when the current one reaches 7 days or 50GB
+- Delete indices after 30 days
+- Automatically apply these settings to all indices matching the pattern "logs-*"
+
 ## Security Considerations
 
 - Filebeat requires privileged access to read container logs
