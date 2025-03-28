@@ -4,12 +4,15 @@ kind: ServiceAccount
 metadata:
   name: filebeat
   namespace: monitoring  # Default namespace, can be overridden by deploy.sh
+  labels:
+    beat.k8s.elastic.co/name: filebeat
 ---
 # Cluster-level permissions for pod metadata access
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: filebeat-cluster-role
+  namespace: monitoring  # Default namespace, can be overridden by deploy.sh
 rules:
 - apiGroups: [""]
   resources:

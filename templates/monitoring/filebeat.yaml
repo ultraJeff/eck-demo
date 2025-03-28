@@ -10,6 +10,9 @@ spec:
   elasticsearchRef:
     name: elasticsearch-sample
     namespace: monitoring  # Must match Elasticsearch namespace
+  kibanaRef:
+    name: kibana-sample
+    namespace: monitoring  # Must match Kibana namespace
   config:
     filebeat:
       inputs:
@@ -18,14 +21,14 @@ spec:
             - /var/log/containers/*.log
       autodiscover:
         providers:
-        - hints:
+        - type: kubernetes
+          node: ${NODE_NAME}
+          hints:
+            enabled: true
             default_config:
+              type: container
               paths:
               - /var/log/containers/*${data.kubernetes.container.id}.log
-              type: container
-            enabled: true
-          node: ${NODE_NAME}
-          type: kubernetes
     processors:
     - add_kubernetes_metadata:
           deployment: true
@@ -34,14 +37,17 @@ spec:
     - drop_event:
         when:
           not:
-            kubernetes.namespace: eck-test
-    - decode_json_fields:
-        fields: ["message"]
-        target: ""
-        overwrite_keys: true
-    - drop_fields:
-        fields: ["ecs", "input", "agent"]
-        ignore_missing: true
+            equals:
+              kubernetes.container.name: log-generator
+    - add_cloud_metadata: {}
+    - add_host_metadata: {}
+    # - decode_json_fields:
+    #     fields: ["message"]
+    #     target: ""
+    #     overwrite_keys: true
+    # - drop_fields:
+    #     fields: ["ecs", "input", "agent"]
+    #     ignore_missing: true
     logging.json: true
     logging.level: debug
   # secureSettings:
@@ -51,10 +57,9 @@ spec:
       spec:
         serviceAccount: filebeat
         automountServiceAccountToken: true
+        terminationGracePeriodSeconds: 30
         dnsPolicy: ClusterFirstWithHostNet
         hostNetwork: true
-        securityContext:
-          runAsUser: 0
         containers:
         - name: filebeat
           securityContext:
@@ -89,6 +94,3 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
-setup:
-  dashboards:
-    enabled: true

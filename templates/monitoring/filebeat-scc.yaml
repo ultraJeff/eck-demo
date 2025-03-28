@@ -19,7 +19,7 @@ seLinuxContext:
 supplementalGroups:
   type: RunAsAny
 users:
-- system:serviceaccount:eck-test:filebeat
+- system:serviceaccount:monitoring:filebeat
 volumes:
 - configMap
 - downwardAPI
