@@ -42,6 +42,10 @@ cat templates/elasticsearch/elasticsearch.yaml | sed "s/namespace: openshift-ope
 echo "Waiting for Elasticsearch to be ready (this may take several minutes)..."
 wait_for_resource "elasticsearch" "elasticsearch-sample" "$TIMEOUT"
 
+# Deploy Elasticsearch route
+echo "Deploying Elasticsearch route..."
+cat templates/elasticsearch/route.yaml | sed "s/\${NAMESPACE}/${NAMESPACE}/g" | oc apply -f -
+
 # Deploy Kibana
 echo "Deploying Kibana..."
 cat templates/kibana/kibana.yaml | sed "s/namespace: openshift-operators/namespace: $NAMESPACE/" | oc apply -f -
@@ -49,6 +53,10 @@ cat templates/kibana/kibana.yaml | sed "s/namespace: openshift-operators/namespa
 # Wait for Kibana to be ready
 echo "Waiting for Kibana to be ready..."
 wait_for_resource "kibana" "kibana-sample" "$TIMEOUT"
+
+# Deploy Kibana route
+echo "Deploying Kibana route..."
+cat templates/kibana/route.yaml | sed "s/\${NAMESPACE}/${NAMESPACE}/g" | oc apply -f -
 
 # Set up Filebeat RBAC and SCC
 echo "Setting up Filebeat RBAC and SecurityContextConstraints..."
