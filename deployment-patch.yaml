@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supergateway
+  namespace: llama-stack-rag
+spec:
+  template:
+    spec:
+      containers:
+      - name: supergateway
+        env:
+        - name: NPM_CONFIG_CACHE
+          value: /tmp/.npm
+        - name: ES_USERNAME
+          value: elastic

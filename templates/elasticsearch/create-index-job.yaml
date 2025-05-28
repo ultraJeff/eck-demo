@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-elasticsearch-index
+  namespace: monitoring
+spec:
+  # Try the job up to 3 times if it fails
+  backoffLimit: 3
+  # Delete the job 1 hour after it completes
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      name: create-elasticsearch-index
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: create-index
+        image: curlimages/curl:latest
+        # Mount volumes for ConfigMap and Secret
+        volumeMounts:
+        - name: index-definition
+          mountPath: /index-definition
+        # Environment variables to access the elastic user credentials
+        env:
+        - name: ES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-sample-es-elastic-user
+              key: elastic
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Make a PUT request to Elasticsearch to create the index
+          # Use basic auth with 'elastic' user and the password from secret
+          # Set content-type to application/json and use the index definition from ConfigMap
+          curl -XPUT "https://elasticsearch-sample-es-http.monitoring.svc:9200/my-new-index" \
+            --insecure \
+            -u "elastic:${ES_PASSWORD}" \
+            -H "Content-Type: application/json" \
+            -d @/index-definition/index-definition.json \
+            -v
+      volumes:
+      # Define the ConfigMap volume for the index definition
+      - name: index-definition
+        configMap:
+          name: my-index-configmap
+

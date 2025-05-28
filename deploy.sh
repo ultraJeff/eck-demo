@@ -8,7 +8,7 @@ set -e
 
 # Default values
 NAMESPACE=${1:-monitoring}
-TIMEOUT=60s
+TIMEOUT=120s
 
 # Function to check if a resource exists
 resource_exists() {
@@ -73,6 +73,10 @@ cat templates/monitoring/filebeat.yaml | sed "s/namespace: monitoring/namespace:
 echo "Waiting for Filebeat to be ready..."
 wait_for_resource "beat" "filebeat" "$TIMEOUT"
 
+# Deploy Log Generator
+echo "Deploying Log Generator..."
+cat templates/apps/log-generator.yaml | sed "s/namespace: monitoring/namespace: $NAMESPACE/g" | oc apply -f -
+
 # Final status check
 echo -e "\nChecking deployment status:"
 echo "Elasticsearch:"
@@ -81,6 +85,7 @@ echo -e "\nKibana:"
 oc get kibana -n $NAMESPACE
 echo -e "\nFilebeat:"
 oc get beat -n $NAMESPACE
-
+echo -e "\nLog Generator:"
+oc get deployment log-generator -n $NAMESPACE
 echo -e "\nDeployment complete! Here are the routes to access your services:"
 oc get routes -n $NAMESPACE
