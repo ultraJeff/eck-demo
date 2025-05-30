@@ -19,8 +19,6 @@ spec:
           env:
           - name: ES_USERNAME
             value: "elastic"
-          - name: ES_PASSWORD
-            value: "7BJw1354965hcSWiaXP0n6FR"
           resources:
             requests:
               memory: "2Gi"

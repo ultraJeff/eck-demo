@@ -33,7 +33,17 @@ spec:
         - name: ES_USERNAME
           value: "elastic"
         - name: ES_PASSWORD
-          value: "7BJw1354965hcSWiaXP0n6FR"
+          valueFrom:
+            secretKeyRef:
+              name: elasticsearch-sample-es-elastic-user
+              key: elastic
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
         ports:
         - containerPort: 8000
           name: http

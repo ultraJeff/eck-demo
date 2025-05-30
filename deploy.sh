@@ -46,6 +46,33 @@ wait_for_resource "elasticsearch" "elasticsearch-sample" "$TIMEOUT"
 echo "Deploying Elasticsearch route..."
 cat templates/elasticsearch/route.yaml | sed "s/namespace: monitoring/namespace: $NAMESPACE/g" | oc apply -f -
 
+# Copy Elasticsearch credentials to llama-serve namespace for supergateway
+echo "Copying Elasticsearch credentials to llama-serve namespace for supergateway..."
+# Create llama-serve namespace if it doesn't exist
+if ! oc get namespace llama-serve >/dev/null 2>&1; then
+    echo "Creating namespace llama-serve..."
+    oc create namespace llama-serve
+fi
+
+# Wait for the elastic user secret to be created
+echo "Waiting for Elasticsearch elastic-user secret to be available..."
+while ! oc get secret elasticsearch-sample-es-elastic-user -n $NAMESPACE >/dev/null 2>&1; do
+    echo "Waiting for elasticsearch-sample-es-elastic-user secret..."
+    sleep 5
+done
+
+# Delete existing secret if it exists
+if oc get secret elasticsearch-sample-es-elastic-user -n llama-serve >/dev/null 2>&1; then
+    echo "Deleting existing elasticsearch-sample-es-elastic-user secret in llama-serve namespace..."
+    oc delete secret elasticsearch-sample-es-elastic-user -n llama-serve
+fi
+
+# Copy the secret from monitoring to llama-serve namespace
+echo "Copying elasticsearch-sample-es-elastic-user secret to llama-serve namespace..."
+ES_PASSWORD=$(oc get secret elasticsearch-sample-es-elastic-user -n $NAMESPACE -o jsonpath='{.data.elastic}')
+oc create secret generic elasticsearch-sample-es-elastic-user --from-literal=elastic=$(echo $ES_PASSWORD | base64 -d) -n llama-serve
+echo "Secret copied successfully!"
+
 # Deploy Kibana
 echo "Deploying Kibana..."
 cat templates/kibana/kibana.yaml | sed "s/namespace: monitoring/namespace: $NAMESPACE/g" | oc apply -f -
